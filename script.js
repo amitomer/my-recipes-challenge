@@ -35,16 +35,48 @@ var RecipeApp = function () {
         recipes.push(recipe);
     };
 
-    var createIngredients = function(){
-        //add code
+    function _getRecipeById (id){
+        for(let i=0; i<recipes.length;i++){
+            if (recipes[i].id== id){
+                return recipes[i];
+            }
+        }
+    }
+
+    var createIngredients = function(ingredientName, recipeId){
+        let recipe= _getRecipeById(recipeId);
+        ingId++;
+        ingredient = {
+            name: ingredientName,
+            id:ingId
+        };
+        recipe.ingredients.push(ingredient);
     };
 
     var _getIngredientsHTML = function(recipe){
         var recipesHTML = "";
-
-        //add code
+        let ingredients=recipe.ingredients;
+        for (let i=0; i<ingredients.length; i++){
+            recipesHTML += "<li data-id="+ingredients[i].id+">"+ingredients[i].name+" <button class= 'btn btn-danger remove-ingrd' type='button'>Remove</button></li>";
+        }
         return recipesHTML;
     };
+    function _getIngredientIndexById (ingredientId, recipe){
+        for (let i=0; i<recipe.ingredients.length;i++){
+            if (recipe.ingredients[i].id== ingredientId){
+                return i;
+            }
+        }
+    }
+
+    function removeIngredient (ingredientId, recipeId){
+        let recipe=_getRecipeById(recipeId);
+        let index=_getIngredientIndexById(ingredientId, recipe);
+        recipe.ingredients.splice(index,1);
+
+        }
+        
+    
 
     var renderRecipes = function () {
         //empty recipes div
@@ -55,7 +87,7 @@ var RecipeApp = function () {
             var recipe = recipes[i];
 
             //return HTML for all ingredients
-            var ingredients = _getIngredientsHTML(); //add code
+            var ingredients = _getIngredientsHTML(recipe); 
 
             $recipes.append(
                 '<div class="recipe col-md-6  offset-md-3 img-fluid shadow" data-id="' + recipe.id + '">' + 
@@ -79,12 +111,13 @@ var RecipeApp = function () {
     return {
         createRecipe: createRecipe,
         renderRecipes: renderRecipes,
-        // createIngredients: createIngredients,
+        createIngredients: createIngredients,
+        removeIngredient: removeIngredient
     }
 };
 
 var app = RecipeApp();
-
+app.renderRecipes();
 
 //--------EVENTS
 
@@ -99,3 +132,17 @@ $('.add-recipe').on('click', function(){
     app.renderRecipes();
 });
 
+$('.recipes').on ('click','.add-ingredients' ,function(){
+    let ingredientName =$(this).closest(".input-group-prepend").closest(".input-group").find("input").val();
+    let currentRecipeId= $(this).closest(".recipe").data().id;
+    app.createIngredients(ingredientName, currentRecipeId);
+    app.renderRecipes();
+});
+
+$('.recipes').on ('click','.remove-ingrd' ,function(){
+    let $clickedIngridient=$(this).closest("li");
+    let ingredientId= $clickedIngridient.data().id;
+    let recipeId= $clickedIngridient.closest(".recipe").data().id;
+    app.removeIngredient(ingredientId, recipeId);
+    app.renderRecipes();
+});
